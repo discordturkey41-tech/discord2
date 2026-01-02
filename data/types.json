@@ -1,0 +1,67 @@
+[
+  {
+    "name": "𝐁𝐑𝐎𝐍𝐙𝐄",
+    "category": "1301504171102568481",
+    "everyoneMention": 5,
+    "hereMention": 7,
+    "shopMention": 10,
+    "maxWarns": 4,
+    "role": "1301504169223389195",
+    "emoji": "<a:emoji_288:1433530635082797197>",
+    "shape": "仐︲㇂🛒㇁",
+    "price": 35000,
+    "tax": 700
+  },
+  {
+    "name": "𝐒𝐈𝐋𝐕𝐄𝐑",
+    "category": "1301504171102568479",
+    "everyoneMention": 7,
+    "hereMention": 9,
+    "shopMention": 12,
+    "maxWarns": 6,
+    "role": "1301504169223389196",
+    "emoji": "<a:arm_emoji_287:1433765729324503151>",
+    "shape": "仌︲㇂⚡㇁",
+    "price": 50000,
+    "tax": 1000
+  },
+  {
+    "name": "𝐆𝐎𝐋𝐃",
+    "category": "1301504171102568478",
+    "everyoneMention": 10,
+    "hereMention": 12,
+    "shopMention": 15,
+    "maxWarns": 7,
+    "role": "1301504169223389197",
+    "emoji": "<a:arm_emoji_285:1433765786618560516>",
+    "shape": "彳︲㇂🌟㇁",
+    "price": 70000,
+    "tax": 1200
+  },
+  {
+    "name": "𝐌𝐀𝐒𝐓𝐄𝐑",
+    "category": "1427247792962801745",
+    "everyoneMention": 12,
+    "hereMention": 15,
+    "shopMention": 18,
+    "maxWarns": 9,
+    "role": "1301504169223389199",
+    "emoji": "<a:emoji_284:1433765972363444255>",
+    "shape": "〆︲㇂🔱㇁",
+    "price": 100000,
+    "tax": 1500
+  },
+  {
+    "name": "𝐄𝐗𝐂𝐋𝐔𝐒𝐈𝐕𝐄",
+    "category": "1433472197606772766",
+    "everyoneMention": 15,
+    "hereMention": 18,
+    "shopMention": 20,
+    "maxWarns": 12,
+    "role": "1301504169223389200",
+    "emoji": "<:Cart:1433766048540266518>",
+    "shape": "シ︲㇂👑㇁",
+    "price": 130000,
+    "tax": 2000
+  }
+]

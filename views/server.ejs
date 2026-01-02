@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= server.name %> - Server Management</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .server-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(26, 42, 77, 0.8) 0%, rgba(39, 58, 99, 0.8) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .server-icon-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 3px solid rgba(0, 212, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .server-title {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 10px 0;
+        }
+
+        .server-owner-info {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(26, 42, 77, 0.7) 0%, rgba(39, 58, 99, 0.7) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .management-section {
+            background: linear-gradient(135deg, rgba(26, 42, 77, 0.6) 0%, rgba(39, 58, 99, 0.6) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-item {
+            background: rgba(26, 42, 77, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 3px solid #7c3aed;
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .config-description {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: rgba(0, 212, 255, 0.6);
+        }
+
+        .server-icon-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">
+                Loading<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">⚡ Bot Command Center</div>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/servers">Servers</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="page-content hidden" id="pageContent">
+        <div class="container fade-in">
+            <a href="/servers" class="back-btn">← Back to Servers</a>
+
+            <!-- Server Header -->
+            <div class="server-header">
+                <% 
+                    let initials = '';
+                    const words = server.name.trim().split(/\s+/);
+                    if (words.length === 1) {
+                        initials = words[0].substring(0, 2).toUpperCase();
+                    } else {
+                        initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+                    }
+                    const hue = Math.abs(server.id.charCodeAt(0) * 12);
+                    const avatarBg = `hsl(${hue}, 70%, 60%)`;
+                %>
+                <% if (server.icon) { %>
+                    <img src="https://cdn.discordapp.com/icons/<%= server.id %>/<%= server.icon %>.png?size=256" alt="<%= server.name %>" class="server-icon-large">
+                <% } else { %>
+                    <div class="server-icon-large server-icon-fallback" style="background: hsl(<%= hue %>, 70%, 60%);">
+                        <%= initials %>
+                    </div>
+                <% } %>
+                <h1 class="server-title"><%= server.name %></h1>
+                <% if (server.owner) { %>
+                    <div class="server-owner-info">👑 You are the owner of this server</div>
+                <% } %>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="memberCount">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                    </div>
+                    <div class="stat-label">Members</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-value" id="botStatusValue">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                    </div>
+                    <div class="stat-label">Bot Status</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-value">Premium</div>
+                    <div class="stat-label">Access Level</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="uptime">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                    </div>
+                    <div class="stat-label">Bot Uptime</div>
+                </div>
+            </div>
+
+            <!-- Management Sections -->
+            <div class="management-section">
+                <div class="section-title">⚙️ Server Configuration</div>
+                
+                <div class="config-item">
+                    <div class="config-label">Bot Setup</div>
+                    <div class="config-description">Configure all bot settings for your server including roles, channels, taxes, and more</div>
+                    <div class="btn-group">
+                        <a href="/server/<%= server.id %>/setup" class="btn btn-primary" style="display: inline-block; text-decoration: none; text-align: center;">Setup Server</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch bot status for this specific server
+        async function checkBotStatus() {
+            try {
+                const response = await fetch('/api/server-bot-status');
+                const servers = await response.json();
+                const currentServer = servers.find(s => s.id === '<%= server.id %>');
+                
+                if (currentServer && currentServer.hasBotAccess) {
+                    document.getElementById('botStatusValue').textContent = '✓ Active';
+                    document.getElementById('botStatusValue').style.color = '#00ff88';
+                } else {
+                    document.getElementById('botStatusValue').textContent = '✗ Offline';
+                    document.getElementById('botStatusValue').style.color = '#ff6b6b';
+                }
+            } catch (error) {
+                console.error('Error checking bot status:', error);
+            }
+        }
+
+        // Fetch bot stats
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                // Format uptime
+                // stats.uptime is an object { ms, formatted, days, hours, minutes }
+                const uptimeMs = stats.uptime.ms;
+                const uptimeHours = Math.floor(uptimeMs / (1000 * 60 * 60));
+                const uptimeDays = Math.floor(uptimeHours / 24);
+                
+                if (uptimeDays > 0) {
+                    document.getElementById('uptime').textContent = `${uptimeDays}d ${uptimeHours % 24}h`;
+                } else {
+                    document.getElementById('uptime').textContent = `${uptimeHours}h`;
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+
+        // Fetch detailed server stats (members)
+        async function fetchServerDetails() {
+            try {
+                const response = await fetch('/api/server/<%= server.id %>/details');
+                const data = await response.json();
+                
+                if (data.member_count) {
+                    const el = document.getElementById('memberCount');
+                    if (el) el.textContent = data.member_count.toLocaleString();
+                }
+            } catch (error) {
+                console.error('Error fetching server details:', error);
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const pageContent = document.getElementById('pageContent');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (pageContent) pageContent.classList.remove('hidden');
+        }
+
+        // Load data on page load
+        window.addEventListener('load', async () => {
+            try {
+                await Promise.all([
+                    checkBotStatus(),
+                    fetchStats(),
+                    fetchServerDetails()
+                ]);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+
+            // Hide loading overlay after all data is loaded
+            hideLoadingOverlay();
+        });
+    </script>
+</body>
+</html>

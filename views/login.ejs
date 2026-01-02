@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Bot Management Panel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">
+                Loading<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero" id="pageContent">
+        <div class="center fade-in" style="max-width: 100%; width: 100%; padding: 0 50px;">
+            <!-- Main Title -->
+            <h1>Shop Bot Control Center</h1>
+            
+            <!-- Login Button -->
+            <div class="form-group mb-2xl">
+                <a class="btn btn-primary" href="/login" style="max-width: 300px; margin: 0 auto;">
+                    <img src="/images/discord.png" alt="Discord Logo" style="width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;">
+                    Login with Discord
+                </a>
+            </div>
+
+            <!-- Bot Description -->
+            <div class="card elevated mt-lg mb-2xl" style="width: 100%;">
+                <h3 class="text-accent mb-md">Manage Your Shop Bot</h3>
+                <p class="section-description" style="max-width: none;">
+                    Experience the power of advanced bot management with our premium control panel. 
+                    Monitor server activity, configure permissions, and automate your Shop Bot experience 
+                    with cutting-edge technology.
+                </p>
+            </div>
+
+            <!-- Features Preview -->
+            <div class="feature-grid mb-2xl" style="grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                <div class="feature-card" style="width: 100%;">
+                    <div class="feature-icon">🚀</div>
+                    <div class="feature-title">Lightning Fast</div>
+                    <p class="feature-description">Ultra-responsive management interface with real-time updates</p>
+                </div>
+                <div class="feature-card" style="width: 100%;">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">Enterprise Security</div>
+                    <p class="feature-description">Bank-level encryption and OAuth2 authentication</p>
+                </div>
+                <div class="feature-card" style="width: 100%;">
+                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-title">Full Control</div>
+                    <p class="feature-description">Complete administration over all bot functions and servers</p>
+                </div>
+            </div>
+
+            <!-- Remember Me Option -->
+            <% if (savedAccounts && savedAccounts.length > 0) { %>
+                <div class="mt-lg">
+                    <p class="text-secondary mb-lg">Quick Access - Select an Account:</p>
+                    <div class="flex flex-col gap-md">
+                        <% savedAccounts.forEach(account => { %>
+                            <div class="card" style="cursor: pointer;" onclick="quickLogin('<%= account.id %>')">
+                                <div class="flex flex-center gap-md">
+                                    <img src="https://cdn.discordapp.com/avatars/<%= account.id %>/<%= account.avatar %>.gif" 
+                                         alt="<%= account.username %>" 
+                                         style="width: 40px; height: 40px; border-radius: 50%;"
+                                         onerror="this.src='https://cdn.discordapp.com/avatars/<%= account.id %>/<%= account.avatar %>.png'">>
+                                    <span class="text-primary"><%= account.username %></span>
+                                    <button class="btn btn-danger" onclick="clearAccount(event, '<%= account.id %>')">✕</button>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Stats Section -->
+            <div class="stats-grid mt-2xl" style="grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                <div class="stat-card" style="width: 100%;">
+                    <div class="stat-number" id="serversCount"><%= (typeof stats !== 'undefined' && stats.servers) ? stats.servers.toLocaleString() : '0' %></div>
+                    <div class="stat-label">Servers</div>
+                </div>
+                <div class="stat-card" style="width: 100%;">
+                    <div class="stat-number" id="usersCount"><%= (typeof stats !== 'undefined' && stats.members) ? stats.members.toLocaleString() : '0' %></div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-card" style="width: 100%;">
+                    <div class="stat-number" id="uptimeTimer" style="font-size: 1.5rem;">Loading...</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        <% if (typeof stats !== 'undefined' && stats.uptime) { %>
+        // Uptime Timer
+        const startTime = Date.now() - <%= stats.uptime %>;
+        
+        function updateUptime() {
+            const now = Date.now();
+            const diff = now - startTime;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const timerEl = document.getElementById('uptimeTimer');
+            if (timerEl) {
+                timerEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+        
+        setInterval(updateUptime, 1000);
+        updateUptime();
+        <% } %>
+
+        function quickLogin(accountId) {
+            window.location.href = `/login?state=remember-me`;
+        }
+
+        async function clearAccount(event, accountId) {
+            event.stopPropagation();
+            if (confirm('Remove this account from quick access?')) {
+                try {
+                    await fetch(`/api/clear-account/${accountId}`, { method: 'POST' });
+                    location.reload();
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        }
+
+        // Load real stats from API
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/public-stats');
+                const stats = await response.json();
+
+                // Format and display users count
+                const usersCount = stats.users.active;
+                const usersDisplay = usersCount >= 1000000 
+                    ? `${(usersCount / 1000000).toFixed(1)}M`
+                    : usersCount >= 1000 
+                    ? `${(usersCount / 1000).toFixed(0)}K+`
+                    : usersCount.toString();
+                document.getElementById('usersCount').textContent = usersDisplay;
+
+                // Format and display servers count
+                const serversCount = stats.servers.total;
+                const serversDisplay = serversCount >= 1000000 
+                    ? `${(serversCount / 1000000).toFixed(1)}M`
+                    : serversCount >= 1000 
+                    ? `${(serversCount / 1000).toFixed(0)}K+`
+                    : serversCount.toString();
+                document.getElementById('serversCount').textContent = serversDisplay;
+
+                // Display uptime
+                document.getElementById('uptimePercent').textContent = stats.uptime.percent + '%';
+
+                console.log('Stats loaded:', stats);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const pageContent = document.getElementById('pageContent');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (pageContent) pageContent.classList.remove('hidden');
+        }
+
+        // Load stats when page loads
+        window.addEventListener('load', async () => {
+            try {
+                await loadStats();
+            } catch (error) {
+                console.error('Error during page load:', error);
+            }
+            // Hide loading overlay after stats are loaded
+            hideLoadingOverlay();
+        });
+    </script>
+</body>
+</html>

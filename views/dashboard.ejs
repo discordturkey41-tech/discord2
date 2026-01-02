@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Premium Bot Panel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">
+                Loading<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">⚡ Bot Command Center</div>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/servers">Servers</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="page-content hidden" id="pageContent">
+        <div class="container fade-in">
+            <!-- Welcome Section -->
+            <div class="section">
+                <div class="text-center mb-2xl">
+                    <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.gif?size=128" 
+                         class="avatar" 
+                         alt="<%= user.username %>"
+                         onerror="this.src='https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=128'">>
+                    <h1>Welcome Back, <%= user.username %></h1>
+                    <p class="section-description">
+                        You're now connected to the Elite Bot Management System. 
+                        Access your servers and configure advanced automation settings.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="section">
+                <h2 class="section-title mb-2xl">Your Statistics</h2>
+                <div class="stats-grid" id="statsContainer">
+                    <div class="stat-card">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                        <div class="stat-label">Your Servers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                        <div class="stat-label">Total Members</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="loader-container" style="padding: 0;">
+                            <div class="spinner spinner-sm"></div>
+                        </div>
+                        <div class="stat-label">Bot Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Features -->
+            <div class="section">
+                <h2 class="section-title mb-2xl">Core Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-title">Smart Moderation</div>
+                        <p class="feature-description">
+                            Automated moderation tools with ML-powered spam detection, 
+                            user management, and safety enforcement
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Analytics Dashboard</div>
+                        <p class="feature-description">
+                            Real-time analytics on server activity, member engagement, 
+                            and performance metrics
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔔</div>
+                        <div class="feature-title">Smart Notifications</div>
+                        <p class="feature-description">
+                            Customizable alerts for important server events 
+                            and automated responses
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚙️</div>
+                        <div class="feature-title">Advanced Config</div>
+                        <p class="feature-description">
+                            Complete control over bot behavior, commands, 
+                            and server-specific settings
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Custom Branding</div>
+                        <p class="feature-description">
+                            Personalize embed colors, prefixes, and bot messages 
+                            to match your server theme
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <div class="feature-title">Performance Boost</div>
+                        <p class="feature-description">
+                            Lightning-fast response times with distributed 
+                            computing infrastructure
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="section">
+                <h2 class="section-title mb-2xl">Next Steps</h2>
+                <div class="flex flex-col gap-lg">
+                    <a href="/servers" class="card" style="cursor: pointer; text-decoration: none;">
+                        <div class="flex-between">
+                            <div>
+                                <h4 class="text-primary mb-sm">Manage Your Servers</h4>
+                                <p class="text-secondary">Configure bot settings for each of your Discord servers</p>
+                            </div>
+                            <span style="font-size: 1.5rem;">→</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Info Card -->
+            <div class="section mt-2xl">
+                <div class="card">
+                    <h3 class="mb-md">Account Information</h3>
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 1.5rem;">
+                        <div>
+                            <p class="text-secondary">Username</p>
+                            <p class="text-primary"><%= user.username %></p>
+                        </div>
+                        <div>
+                            <p class="text-secondary">User ID</p>
+                            <p class="text-primary"><%= user.id %></p>
+                        </div>
+                        <div>
+                            <p class="text-secondary">Account Type</p>
+                            <p class="text-primary">Premium Member</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary">Status</p>
+                            <p class="text-primary">Verified</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout Section -->
+            <div class="section mt-2xl">
+                <div class="flex gap-lg">
+                    <a href="/logout" class="btn btn-danger">
+                        <span>🚪</span> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Fetch and display real bot statistics
+        async function loadBotStats() {
+            try {
+                const response = await fetch('/api/stats');
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch stats, status:', response.status);
+                    return;
+                }
+                
+                const stats = await response.json();
+                const statsContainer = document.getElementById('statsContainer');
+                
+                if (!statsContainer) return;
+
+                // Format member count with K/M suffix
+                const memberCount = stats.members?.total || 0;
+                const memberDisplay = memberCount >= 1000000 
+                    ? `${(memberCount / 1000000).toFixed(1)}M`
+                    : memberCount >= 1000
+                    ? `${(memberCount / 1000).toFixed(0)}K`
+                    : memberCount.toString();
+
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.servers?.managed || 0}</div>
+                        <div class="stat-label">Your Servers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${memberDisplay}</div>
+                        <div class="stat-label">Total Members</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.uptime?.days || 0}d</div>
+                        <div class="stat-label">Bot Uptime</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.latency || 0}ms</div>
+                        <div class="stat-label">Latency</div>
+                    </div>
+                `;
+
+                // Hide loading overlay after stats are loaded
+                hideLoadingOverlay();
+            } catch (error) {
+                console.error('Error loading stats:', error.message || error);
+                // Hide loading overlay even on error
+                hideLoadingOverlay();
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const pageContent = document.getElementById('pageContent');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (pageContent) pageContent.classList.remove('hidden');
+        }
+
+        // Load stats immediately on page load
+        loadBotStats();
+        
+        // Refresh stats every 5 seconds
+        setInterval(loadBotStats, 5000);
+    </script>
+</body>
+</html>
