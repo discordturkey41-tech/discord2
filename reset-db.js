@@ -8,46 +8,14 @@
 
 const mongoose = require('mongoose');
 const path = require('path');
-const fs = require('fs');
 
-// Load config
-let fileConfig = {};
-try {
-    fileConfig = require('./config.json');
-} catch (err) {
-    console.warn('Warning: config.json not found');
-}
-
-// Load .env manually
-try {
-    const envPath = path.join(__dirname, '.env');
-    if (fs.existsSync(envPath)) {
-        const data = fs.readFileSync(envPath, 'utf8');
-        data.split('\n').forEach(line => {
-            const part = line.trim();
-            if (!part || part.startsWith('#')) return;
-            const idx = part.indexOf('=');
-            if (idx !== -1) {
-                const key = part.substring(0, idx).trim();
-                const value = part.substring(idx + 1).trim();
-                if (!process.env[key]) {
-                    process.env[key] = value;
-                }
-            }
-        });
-    }
-} catch (err) {
-    console.warn('Warning: Error loading .env file');
-}
-
-const config = {
-    mongoUri: process.env.MONGO_URI || fileConfig.mongoUri || 'mongodb://localhost:27017/discord_bot_dashboard'
-};
+// Load environment variables
+require('dotenv').config();
 
 console.log('🔄 Connecting to MongoDB...');
-console.log('URI:', config.mongoUri);
+console.log('URI:', process.env.MONGO_URI);
 
-mongoose.connect(config.mongoUri)
+mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('✅ Connected to MongoDB');
         

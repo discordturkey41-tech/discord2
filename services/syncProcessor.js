@@ -4,7 +4,7 @@
  * Add this to your main server or bot file
  */
 
-const SyncManager = require('./services/syncManager.js');
+const SyncManager = require('./syncManager.js');
 
 // Process sync queue every 30 seconds
 setInterval(async () => {

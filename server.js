@@ -10,56 +10,12 @@ const MongoStore = require('connect-mongo').default;
 // CONFIGURATION & ENV LOADING
 // ============================================================
 
-// Manually load .env file if dotenv is not available
-try {
-    const envPath = path.join(__dirname, '.env');
-    if (fs.existsSync(envPath)) {
-        const data = fs.readFileSync(envPath, 'utf8');
-        data.split('\n').forEach(line => {
-            const part = line.trim();
-            if (!part || part.startsWith('#')) return;
-            const idx = part.indexOf('=');
-            if (idx !== -1) {
-                const key = part.substring(0, idx).trim();
-                const value = part.substring(idx + 1).trim();
-                if (!process.env[key]) {
-                    process.env[key] = value;
-                }
-            }
-        });
-        console.log('Loaded environment variables from .env');
-    }
-} catch (err) {
-    console.error('Error loading .env file:', err);
-}
+// Load environment variables from .env file
+require('dotenv').config();
 
-// Load config.json as fallback
-let fileConfig = {};
-try {
-    fileConfig = require('./config.json');
-} catch (err) {
-    // config.json might not exist, which is fine if env vars are set
-}
-
-const config = {
-    clientId: process.env.CLIENT_ID || fileConfig.clientId,
-    clientSecret: process.env.CLIENT_SECRET || fileConfig.clientSecret,
-    redirectUri: process.env.REDIRECT_URI || fileConfig.redirectUri,
-    botId: process.env.BOT_ID || fileConfig.botId,
-    token: process.env.BOT_TOKEN || fileConfig.token,
-    sessionSecret: process.env.SESSION_SECRET || fileConfig.sessionSecret || 'default_insecure_secret',
-    port: process.env.PORT || 3000,
-    mongoUri: process.env.MONGO_URI || fileConfig.mongoUri || 'mongodb://localhost:27017/discord_bot_dashboard'
-};
-
-// Connect to MongoDB
-mongoose.connect(config.mongoUri)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
-// Validate critical config
-if (!config.clientId || !config.clientSecret) {
-    console.warn('WARNING: Client ID or Secret is missing. Authentication will fail.');
+// Validate critical environment variables
+if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+    console.warn('WARNING: CLIENT_ID or CLIENT_SECRET is missing. Authentication will fail.');
 }
 
 const app = express();
@@ -77,10 +33,10 @@ let realBotServerCount = 0;
 
 // Fetch real bot guild count
 async function fetchBotGuilds() {
-    if (!config.token) return;
+    if (!process.env.BOT_TOKEN) return;
     try {
         const res = await fetch('https://discord.com/api/v10/users/@me/guilds?limit=200', {
-            headers: { Authorization: `Bot ${config.token}` }
+            headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
         });
         if (res.ok) {
             const guilds = await res.json();
@@ -126,15 +82,15 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser(config.sessionSecret));
+app.use(cookieParser(process.env.SESSION_SECRET));
 
 // Session configuration
 app.use(
     session({
-        secret: config.sessionSecret,
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
-        store: MongoStore.create({ mongoUrl: config.mongoUri }),
+        store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
         cookie: { 
             maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
             secure: process.env.NODE_ENV === 'production' 
@@ -217,8 +173,8 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     const url =
         'https://discord.com/oauth2/authorize' +
-        `?client_id=${config.clientId}` +
-        `&redirect_uri=${encodeURIComponent(config.redirectUri)}` +
+        `?client_id=${process.env.CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}` +
         '&response_type=code' +
         '&scope=identify%20guilds';
     res.redirect(url);
@@ -240,11 +196,11 @@ app.get('/callback', async (req, res) => {
 
         // Request access token from Discord
         const data = new URLSearchParams({
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
+            client_id: process.env.CLIENT_ID,
+            client_secret: process.env.CLIENT_SECRET,
             grant_type: 'authorization_code',
             code,
-            redirect_uri: config.redirectUri
+            redirect_uri: process.env.REDIRECT_URI
         });
 
         const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
@@ -423,7 +379,7 @@ app.get('/server/:id', checkAuth, (req, res) => {
     res.render('server', { 
         server: server, 
         user: req.session.user,
-        botId: config.botId
+        botId: process.env.BOT_ID
     });
 });
 
@@ -441,7 +397,7 @@ app.get('/server/:id/setup', checkAuth, (req, res) => {
     res.render('setup', { 
         server: server, 
         user: req.session.user,
-        botId: config.botId
+        botId: process.env.BOT_ID
     });
 });
 
@@ -580,7 +536,7 @@ app.get('/api/stats', checkAuth, (req, res) => {
             bot: {
                 name: 'Elite Bot',
                 status: 'Online',
-                id: config.botId
+                id: process.env.BOT_ID
             },
             servers: {
                 managed: serverCount,
@@ -623,13 +579,13 @@ app.get('/api/server-bot-status', checkAuth, async (req, res) => {
                 let statusCode = null;
                 
                 // Use bot token if available (more reliable), otherwise use user token
-                const authHeader = config.token 
-                    ? `Bot ${config.token}`
+                const authHeader = process.env.BOT_TOKEN 
+                    ? `Bot ${process.env.BOT_TOKEN}`
                     : `Bearer ${req.session.accessToken}`;
                 
                 try {
                     const memberRes = await fetch(
-                        `https://discord.com/api/v10/guilds/${guild.id}/members/${config.botId}`,
+                        `https://discord.com/api/v10/guilds/${guild.id}/members/${process.env.BOT_ID}`,
                         {
                             headers: { Authorization: authHeader },
                         }
@@ -718,9 +674,9 @@ app.get('/api/server/:id/details', checkAuth, async (req, res) => {
         });
         
         // If user token fails (maybe scope issue), try bot token if available
-        if (!response.ok && config.token) {
+        if (!response.ok && process.env.BOT_TOKEN) {
             response = await fetch(`https://discord.com/api/v10/guilds/${guildId}?with_counts=true`, {
-                headers: { Authorization: `Bot ${config.token}` }
+                headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
             });
         }
         
@@ -761,15 +717,15 @@ app.get('/api/server/:id/roles-channels', checkAuth, async (req, res) => {
         
         // Fetch from Discord API
         const rolesResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
-            headers: { Authorization: `Bot ${config.token}` }
+            headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
         });
         
         const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
-            headers: { Authorization: `Bot ${config.token}` }
+            headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
         });
 
         const membersResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`, {
-            headers: { Authorization: `Bot ${config.token}` }
+            headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
         });
         
         if (!rolesResponse.ok || !channelsResponse.ok) {
@@ -1007,7 +963,7 @@ app.get('/api/test', async (req, res) => {
             success: true,
             message: 'API and Database connection working properly',
             timestamp: new Date(),
-            mongoUri: config.mongoUri.replace(/:[^:]*@/, ':***@'), // Hide password
+            mongoUri: process.env.MONGO_URI.replace(/:[^:]*@/, ':***@'), // Hide password
             status: 'healthy'
         });
     } catch (error) {
@@ -1119,14 +1075,14 @@ app.get('/api/server/:id/last-sync', checkAuth, async (req, res) => {
     }
 });
 
-const PORT = config.port;
+const PORT = process.env.PORT;
 
 // Initialize sync system
 const syncProcessor = require('./services/syncProcessor.js');
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
-    if (config.token) {
+    if (process.env.BOT_TOKEN) {
         console.log('Bot token loaded.');
     } else {
         console.log('No bot token provided - some features may be limited.');

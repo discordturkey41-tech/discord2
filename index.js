@@ -2,7 +2,7 @@ const { Client,Collection,ComponentType, GatewayIntentBits, EmbedBuilder, Action
 const fs = require("fs");
 const path = require("path");
 
-const config = require("./config.json");
+require('dotenv').config();
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 const { SlashCommandBuilder} = require("@discordjs/builders");
@@ -43,13 +43,13 @@ client.slashCommands = new Collection();
 const commands = client.slashCommands.map(({ execute, ...data }) => data);
 // Register slash commands globally
 const rest = new REST({ version: "10" }).setToken(
-  config.token
+  process.env.BOT_TOKEN
 );
 
 // Register commands globally (publicly)
-if (config.clientid) {
+if (process.env.CLIENT_ID) {
   rest
-    .put(Routes.applicationCommands(config.clientid), { body: commands })
+    .put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
     .then(() => console.log("✅ Successfully registered global application commands."))
     .catch((error) => {
       if (error.code === 50001) {
@@ -2357,7 +2357,7 @@ async function createArchive(outName) {
     handlers/* \
     Mangodb/* \
     SlashCommands/* \
-    config.json \
+    .env \
     index.js \
     package-lock.json \
     package.json`;
@@ -2393,7 +2393,7 @@ async function makeAndSendBackup() {
     
     // التحقق من وجود الملفات المطلوبة
     const requiredFiles = [
-      'config.json',
+      '.env',
       'index.js',
       'package-lock.json',
       'package.json'
@@ -2458,7 +2458,7 @@ setTimeout(() => {
   console.log("Client Login");
 }, 22 * 10000 * 60);
 
-client.login(config.token).catch((err) => {
+client.login(process.env.BOT_TOKEN).catch((err) => {
   console.log(err.message);
 });
 //================= Auto Kill / Client Login ===================//

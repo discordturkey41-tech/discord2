@@ -7,15 +7,13 @@ module.exports = {
     async execute(client,guild) {
         let allowedGuilds = [];
         try {
-            const configPath = path.join(__dirname, '../config.json');
-            if (fs.existsSync(configPath)) {
-                const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-                if (config && config.guildid) {
-                    allowedGuilds = [
-                        config.guildid,
-                        '1282020327810924585'
-                    ];
-                }
+            // Load environment variables
+            require('dotenv').config();
+            if (process.env.GUILD_ID) {
+                allowedGuilds = [
+                    process.env.GUILD_ID,
+                    '1282020327810924585'
+                ];
             }
         } catch (error) {
             return;
