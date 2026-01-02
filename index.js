@@ -88,6 +88,11 @@ mongoose
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      family: 4,
+      maxPoolSize: 10,
     }
   )
   .then(() => {

@@ -66,7 +66,10 @@ class SyncManager {
      */
     static async getPendingSyncs() {
         try {
-            return await SyncQueue.find({ status: 'pending' }).sort({ timestamp: 1 });
+            return await SyncQueue.find({ status: 'pending' })
+                .sort({ timestamp: 1 })
+                .maxTimeMS(20000)
+                .exec();
         } catch (error) {
             console.error('Error getting pending syncs:', error);
             return [];
